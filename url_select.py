@@ -7,6 +7,18 @@ import re
 import subprocess
 import sys
 import os
+from datetime import datetime
+
+
+def log_message(message, log_filename="my_log.txt"):
+    home_dir = os.path.expanduser("~")
+    log_path = os.path.join(home_dir, log_filename)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    full_message = f"[{timestamp}] {message}\n\n"
+
+    with open(log_path, "a") as log_file:
+        log_file.write(full_message)
 
 
 def get_visible_kitty_text(window_id):
@@ -75,9 +87,10 @@ def get_active_window():
     windows = get_all_windows()
     for os_window in windows:
         for tab in os_window["tabs"]:
-            for w in tab["windows"]:
-                if w["at_prompt"]:
-                    return w["id"]
+            if tab["is_active"] and tab["is_focused"]:
+                for w in tab["windows"]:
+                    if w["is_self"] or w["at_prompt"] or w["in_alternate_screen"]:
+                        return w["id"]
     return None
 
 
